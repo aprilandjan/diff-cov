@@ -13,11 +13,8 @@ describe('validateConfig', () => {
           base: 'auto',
           scope: 'worktree',
           coverage: ['coverage/lcov.info'],
-          include: ['src/**/*.ts'],
-          exclude: ['**/*.test.ts'],
           threshold: 90,
           perFileThreshold: 80,
-          missing: 'fail',
           allowStale: false,
           includeUntracked: true,
           advisory: true,
@@ -29,11 +26,8 @@ describe('validateConfig', () => {
       base: 'auto',
       scope: 'worktree',
       coverage: ['coverage/lcov.info'],
-      include: ['src/**/*.ts'],
-      exclude: ['**/*.test.ts'],
       threshold: 90,
       perFileThreshold: 80,
-      missing: 'fail',
       allowStale: false,
       includeUntracked: true,
       advisory: true,
@@ -47,6 +41,8 @@ describe('validateConfig', () => {
 
   it('rejects unknown keys', () => {
     expect(() => validateConfig({ treshold: 90 }, 'test')).toThrow(DiffCovError)
+    expect(() => validateConfig({ include: [] }, 'test')).toThrow(/unknown key/)
+    expect(() => validateConfig({ missing: 'fail' }, 'test')).toThrow(/unknown key/)
   })
 
   it('rejects out-of-range thresholds', () => {
@@ -67,19 +63,19 @@ describe('loadConfig', () => {
     const root = await mkdtemp(join(tmpdir(), 'diff-cov-config-'))
     await writeFile(
       join(root, 'package.json'),
-      JSON.stringify({ diffCov: { base: 'new', threshold: 85 } }),
+      JSON.stringify({ diffCov: { base: 'stable', threshold: 85 } }),
       'utf8',
     )
-    expect(await loadConfig(root)).toEqual({ base: 'new', threshold: 85 })
+    expect(await loadConfig(root)).toEqual({ base: 'stable', threshold: 85 })
   })
 
   it('reads diff-cov.config.mjs', async () => {
     const root = await mkdtemp(join(tmpdir(), 'diff-cov-config-'))
     await writeFile(
       join(root, 'diff-cov.config.mjs'),
-      'export default { base: "auto", missing: "warn" }\n',
+      'export default { base: "auto", advisory: true }\n',
       'utf8',
     )
-    expect(await loadConfig(root)).toEqual({ base: 'auto', missing: 'warn' })
+    expect(await loadConfig(root)).toEqual({ base: 'auto', advisory: true })
   })
 })

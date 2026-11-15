@@ -1,7 +1,7 @@
 import { collectChanges } from './diff.js'
 import { resolveBase } from './git.js'
 import { buildReport } from './report.js'
-import type { BaseSpec, CoverageSource, MissingPolicy, Report, Scope } from './types.js'
+import type { BaseSpec, CoverageSource, Report, Scope } from './types.js'
 
 export interface CollectDiffCoverageOptions {
   cwd: string
@@ -9,9 +9,6 @@ export interface CollectDiffCoverageOptions {
   scope?: Scope
   coverage: CoverageSource
   coverageFiles?: string[]
-  include?: string[]
-  exclude?: string[]
-  missing?: MissingPolicy
   includeUntracked?: boolean
   pathPrefix?: string
 }
@@ -30,9 +27,6 @@ export async function collectDiffCoverage(options: CollectDiffCoverageOptions): 
     scope,
     coverage: options.coverage,
     coverageFiles: options.coverageFiles,
-    include: options.include,
-    exclude: options.exclude,
-    missing: options.missing,
     pathPrefix: options.pathPrefix,
   })
 }

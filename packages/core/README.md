@@ -30,6 +30,6 @@ The metric is defined in the repository's `docs/metric.md`:
 
 - added and modified lines on the head side of the diff are the candidate set;
 - lines absent from the coverage report are not executable and are excluded;
-- a changed file missing from the report fails closed by default.
+- a changed file absent from the report is skipped.
 
 MIT licensed.

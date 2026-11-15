@@ -47,7 +47,7 @@ describe('git integration', () => {
     expect([...(changes[0]?.added ?? [])]).toEqual([2, 3])
   })
 
-  it('uses the closest remote-tracking ref in new mode', async () => {
+  it('uses the closest remote-tracking ref in auto mode', async () => {
     const root = await makeRepo()
     await write(root, 'src/a.ts', 'line1\n')
     await commit(root, 'init')
@@ -58,8 +58,25 @@ describe('git integration', () => {
     await write(root, 'src/a.ts', 'line1\nline2\n')
     await commit(root, 'feature')
 
-    const base = await resolveBase(root, 'new')
-    expect(base.mode).toBe('new')
+    const base = await resolveBase(root, 'auto')
+    expect(base.mode).toBe('auto')
+    expect(base.ref).toBe('origin/main')
+    expect(base.mergeBase).toBe(mainSha)
+  })
+
+  it('uses the closest trunk in stable mode', async () => {
+    const root = await makeRepo()
+    await write(root, 'src/a.ts', 'line1\n')
+    await commit(root, 'init')
+    const mainSha = await revParse(root, 'HEAD')
+    await runGit(root, ['update-ref', 'refs/remotes/origin/main', mainSha])
+
+    await runGit(root, ['switch', '-c', 'feature'])
+    await write(root, 'src/a.ts', 'line1\nline2\n')
+    await commit(root, 'feature')
+
+    const base = await resolveBase(root, 'stable')
+    expect(base.mode).toBe('stable')
     expect(base.ref).toBe('origin/main')
     expect(base.mergeBase).toBe(mainSha)
   })

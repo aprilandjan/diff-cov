@@ -1,6 +1,6 @@
-export type BaseSpec = 'auto' | 'new' | (string & {})
+export type BaseSpec = 'auto' | 'stable' | (string & {})
 
-export type BaseMode = 'branch' | 'auto' | 'new'
+export type BaseMode = 'branch' | 'auto' | 'stable'
 
 export interface ResolvedBase {
   /** How the base was chosen. */
@@ -17,8 +17,6 @@ export interface ResolvedBase {
 }
 
 export type Scope = 'committed' | 'worktree'
-
-export type MissingPolicy = 'fail' | 'warn' | 'ignore'
 
 export type ChangeStatus = 'added' | 'modified' | 'renamed'
 
@@ -39,8 +37,7 @@ export interface CoverageSource {
 
 export type FileStatus = 'measured' | 'skipped'
 
-export type SkipReason =
-  'excluded' | 'not-included' | 'missing-from-coverage' | 'no-instrumented-lines'
+export type SkipReason = 'outside-project' | 'not-in-report' | 'no-instrumented-lines'
 
 export interface FileReport {
   path: string
@@ -76,8 +73,6 @@ export interface Report {
   scope: Scope
   bases: ResolvedBase[]
   coverageFiles: string[]
-  include: string[]
-  exclude: string[]
   pathPrefix?: string
   files: FileReport[]
   totals: ReportTotals

@@ -172,7 +172,7 @@ export async function resolveBase(
     throw new DiffCovError(`Cannot resolve revision ${head}.`, 'BAD_HEAD')
   }
 
-  if (spec !== 'auto' && spec !== 'new') {
+  if (spec !== 'auto' && spec !== 'stable') {
     if (!(await refExists(root, spec))) {
       throw new DiffCovError(
         `Base ref ${spec} does not exist locally. Run git fetch, or pass an existing ref.`,
@@ -210,7 +210,7 @@ export async function resolveBase(
 
   const currentBranch = await getCurrentBranch(root)
   const trunk = refs.filter((ref) => isTrunkRef(ref.name, currentBranch))
-  const candidates = spec === 'auto' && trunk.length > 0 ? trunk : refs
+  const candidates = spec === 'stable' && trunk.length > 0 ? trunk : refs
   const best = await closestBase(root, headSha, candidates)
   if (!best) {
     throw new DiffCovError(
@@ -220,15 +220,15 @@ export async function resolveBase(
   }
 
   const warnings: string[] = []
-  if (spec === 'auto' && trunk.length === 0) {
+  if (spec === 'stable' && trunk.length === 0) {
     warnings.push(`No trunk branch matched; using ${best.ref} as the base.`)
   }
-  if (spec === 'new' && best.ref) {
-    warnings.push(`new mode compared against ${best.ref} (the closest remote ancestor).`)
+  if (spec === 'auto' && best.ref) {
+    warnings.push(`auto mode compared against ${best.ref} (the closest remote ancestor).`)
   }
 
   return {
-    mode: spec === 'auto' ? 'auto' : 'new',
+    mode: spec === 'stable' ? 'stable' : 'auto',
     ref: best.ref,
     mergeBase: best.mergeBase,
     head: headSha,

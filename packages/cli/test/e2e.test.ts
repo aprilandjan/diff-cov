@@ -2,7 +2,7 @@ import { mkdtemp, mkdir, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { revParse, runGit } from '@diff-cov/core'
+import { runGit } from '@diff-cov/core'
 import { run } from '../src/run.js'
 
 async function makeRepo(): Promise<string> {
@@ -137,27 +137,43 @@ describe('cli e2e', () => {
     ).rejects.toMatchObject({ code: 'NO_COVERAGE' })
   })
 
-  it('uses the remote sha from pre-push stdin', async () => {
-    const root = await makeRepo()
-    const remote = await revParse(root, 'HEAD')
-    await runGit(root, ['update-ref', 'refs/remotes/origin/main', remote])
-    await write(root, 'src/a.ts', 'line1\nline2\nline3\n')
-    await commit(root, 'change')
-    await write(root, 'coverage/lcov.info', lcov)
-    const local = await revParse(root, 'HEAD')
+  it('merges per-package lcov reports from the repository root', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'diff-cov-e2e-'))
+    await runGit(root, ['init', '-b', 'main'])
+    await runGit(root, ['config', 'user.email', 'test@example.com'])
+    await runGit(root, ['config', 'user.name', 'DiffCov Test'])
+    await runGit(root, ['config', 'commit.gpgsign', 'false'])
+
+    await write(root, 'packages/a/src/a.ts', 'line1\n')
+    await write(root, 'packages/b/src/b.ts', 'line1\n')
+    await commit(root, 'init')
+
+    await write(root, 'packages/a/src/a.ts', 'line1\nline2\nline3\n')
+    await write(root, 'packages/b/src/b.ts', 'line1\nline2\n')
+    await write(
+      root,
+      'packages/a/coverage/lcov.info',
+      ['SF:src/a.ts', 'DA:1,1', 'DA:2,0', 'DA:3,1', 'end_of_record', ''].join('\n'),
+    )
+    await write(
+      root,
+      'packages/b/coverage/lcov.info',
+      ['SF:src/b.ts', 'DA:1,1', 'DA:2,0', 'end_of_record', ''].join('\n'),
+    )
 
     const stdout = captureStdout()
     const code = await run({
       cwd: root,
-      push: true,
-      stdin: `refs/heads/main ${local} refs/heads/main ${remote}\n`,
-      coverage: ['coverage/lcov.info'],
+      base: 'HEAD',
+      scope: 'worktree',
+      coverage: ['packages/*/coverage/lcov.info'],
       threshold: 90,
       color: false,
     })
 
     expect(code).toBe(1)
-    expect(stdout.output()).toContain('Base: main')
-    expect(stdout.output()).toContain('Diff coverage 50.0% (1/2)')
+    expect(stdout.output()).toContain('packages/a/src/a.ts')
+    expect(stdout.output()).toContain('packages/b/src/b.ts')
+    expect(stdout.output()).toContain('Diff coverage 33.3% (1/3)')
   })
 })

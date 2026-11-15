@@ -5,125 +5,37 @@ import pc from 'picocolors'
 import {
   buildReport,
   collectChanges,
-  countCommits,
   DiffCovError,
   evaluateThreshold,
   formatReport,
   getRepoRoot,
   loadConfig,
-  MissingCoverageError,
-  refExists,
   resolveBase,
-  revParse,
   toPosix,
   type BaseSpec,
-  type ChangedFile,
   type DiffCovConfig,
-  type MissingPolicy,
   type Report,
-  type ResolvedBase,
   type Scope,
   type Verdict,
 } from '@diff-cov/core'
 import { DEFAULT_COVERAGE_PATTERNS, loadCoverage } from './coverage.js'
-import { parsePushRefs, readStdin, type PushRef } from './push.js'
-
-const ZERO_SHA = /^0+$/
 
 export interface CliOptions {
   cwd?: string
   config?: string
   base?: BaseSpec
   scope?: Scope
-  push?: boolean
   coverage?: string[]
   threshold?: number
   perFileThreshold?: number
   /** @deprecated Use perFileThreshold. */
   perFile?: number
-  missing?: MissingPolicy
   allowStale?: boolean
-  include?: string[]
-  exclude?: string[]
+  advisory?: boolean
   json?: boolean
   report?: string
   color: boolean
   verbose?: boolean
-  advisory?: boolean
-  /** Pre-push stdin, for tests and embedders. */
-  stdin?: string
-}
-
-function mergeChanges(target: Map<string, ChangedFile>, changes: ChangedFile[]): void {
-  for (const change of changes) {
-    const existing = target.get(change.path)
-    if (!existing) {
-      target.set(change.path, { ...change, added: new Set(change.added) })
-      continue
-    }
-    for (const line of change.added) existing.added.add(line)
-    if (change.status === 'added') existing.status = 'added'
-  }
-}
-
-export async function collectPush(
-  root: string,
-  refs: PushRef[],
-): Promise<{ changes: ChangedFile[]; bases: ResolvedBase[]; warnings: string[] }> {
-  const headSha = await revParse(root, 'HEAD')
-  if (!headSha) throw new DiffCovError('HEAD cannot be resolved.', 'BAD_HEAD')
-
-  const branchRefs = refs.filter(
-    (ref) => !ZERO_SHA.test(ref.localSha) && ref.remoteRef.startsWith('refs/heads/'),
-  )
-  if (branchRefs.length === 0) {
-    // No stdin (manual --push) means "everything not on the remote yet".
-    // If stdin only contained tag pushes there is nothing to measure.
-    if (refs.length > 0) return { changes: [], bases: [], warnings: [] }
-    const base = await resolveBase(root, 'new')
-    const changes = await collectChanges(root, base, { scope: 'committed' })
-    return { changes, bases: [base], warnings: [] }
-  }
-
-  const changes = new Map<string, ChangedFile>()
-  const bases: ResolvedBase[] = []
-  const warnings: string[] = []
-
-  for (const ref of branchRefs) {
-    if (ref.localSha !== headSha) {
-      throw new DiffCovError(
-        `Pushing ${ref.localRef} (${ref.localSha.slice(0, 8)}) while HEAD is ${headSha.slice(0, 8)}. ` +
-          'DiffCov reads the worktree coverage report, so it can only check HEAD.',
-        'NOT_HEAD',
-      )
-    }
-
-    let base: ResolvedBase
-    if (!ZERO_SHA.test(ref.remoteSha) && (await refExists(root, ref.remoteSha))) {
-      base = {
-        mode: 'new',
-        ref: ref.remoteRef.replace(/^refs\/heads\//, ''),
-        mergeBase: ref.remoteSha,
-        head: ref.localSha,
-        distance: await countCommits(root, ref.remoteSha, ref.localSha),
-        warnings: [],
-      }
-    } else {
-      base = await resolveBase(root, 'new', ref.localSha)
-      if (!ZERO_SHA.test(ref.remoteSha)) {
-        warnings.push(
-          `Remote commit ${ref.remoteSha.slice(0, 8)} is not available locally; used ${base.ref} as the base.`,
-        )
-      }
-    }
-
-    if (!bases.some((item) => item.mergeBase === base.mergeBase && item.head === base.head)) {
-      bases.push(base)
-    }
-    mergeChanges(changes, await collectChanges(root, base, { scope: 'committed' }))
-  }
-
-  return { changes: [...changes.values()], bases, warnings }
 }
 
 export async function checkFreshness(
@@ -167,9 +79,8 @@ function colorize(text: string, enabled: boolean): string {
 }
 
 export function exitCodeFor(error: unknown): number {
-  if (error instanceof MissingCoverageError) return 3
   if (error instanceof DiffCovError) {
-    if (['NO_COVERAGE', 'MISSING_COVERAGE', 'STALE_COVERAGE'].includes(error.code)) return 3
+    if (['NO_COVERAGE', 'STALE_COVERAGE'].includes(error.code)) return 3
     return 2
   }
   return 2
@@ -190,15 +101,12 @@ export async function run(options: CliOptions): Promise<number> {
   const config: DiffCovConfig = { ...rootConfig, ...localConfig }
 
   const scope: Scope = options.scope ?? config.scope ?? 'committed'
-  const base: BaseSpec = options.base ?? config.base ?? (options.push ? 'new' : 'auto')
+  const base: BaseSpec = options.base ?? config.base ?? 'auto'
   const coveragePatterns = options.coverage?.length
     ? options.coverage
     : config.coverage?.length
       ? config.coverage
       : DEFAULT_COVERAGE_PATTERNS
-  const include = options.include?.length ? options.include : config.include
-  const exclude = options.exclude?.length ? options.exclude : config.exclude
-  const missing: MissingPolicy = options.missing ?? config.missing ?? 'fail'
   const threshold = options.threshold ?? config.threshold ?? 90
   const perFile =
     options.perFileThreshold ?? options.perFile ?? config.perFileThreshold ?? config.perFile
@@ -212,35 +120,18 @@ export async function run(options: CliOptions): Promise<number> {
     )
   }
 
-  let changes: ChangedFile[]
-  let bases: ResolvedBase[]
-  let scopeUsed: Scope = scope
-
-  if (options.push) {
-    const input = options.stdin ?? (await readStdin())
-    const refs = parsePushRefs(input)
-    const push = await collectPush(root, refs)
-    changes = push.changes
-    bases = push.bases
-    scopeUsed = 'committed'
-  } else {
-    const resolved = await resolveBase(root, base)
-    changes = await collectChanges(root, resolved, {
-      scope,
-      includeUntracked: config.includeUntracked,
-    })
-    bases = [resolved]
-  }
+  const resolved = await resolveBase(root, base)
+  const changes = await collectChanges(root, resolved, {
+    scope,
+    includeUntracked: config.includeUntracked,
+  })
 
   const report: Report = buildReport({
     changes,
-    bases,
-    scope: scopeUsed,
+    bases: [resolved],
+    scope,
     coverage: loaded.source,
     coverageFiles: loaded.files,
-    include,
-    exclude,
-    missing,
     pathPrefix,
   })
 

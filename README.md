@@ -34,7 +34,7 @@ pnpm add -D @diff-cov/vitest # optional: Vitest reporter
 The CLI installs a `diff-cov` binary. Without installing:
 
 ```bash
-npx @diff-cov/cli --base new --threshold 90
+npx @diff-cov/cli
 ```
 
 ## Quick start: pre-push
@@ -48,17 +48,19 @@ npx vitest run --coverage
 Run the check:
 
 ```bash
-pnpm exec diff-cov --base new --threshold 90
+pnpm exec diff-cov
 ```
 
 Add it to Husky:
 
 ```bash
 # .husky/pre-push
-pnpm exec diff-cov --push --threshold 90
+pnpm exec diff-cov
 ```
 
-`--push` reads the refs git passes on stdin, so it measures exactly what this push adds to the remote. If there is no stdin, it falls back to `new` mode.
+With no arguments it reads `coverage/lcov.info`, uses the `auto` base, and
+applies a 90% threshold. `auto` compares against the closest remote-tracking
+ancestor, which is what the remote does not have yet.
 
 Exit codes:
 
@@ -75,15 +77,16 @@ blocking check in CI or pre-push.
 
 ## Base modes
 
-| Mode                   | Question                                   | Implementation                                                                                                      |
-| ---------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| `--base origin/stable` | What did I change relative to this branch? | `merge-base(ref, HEAD) → HEAD`                                                                                      |
-| `--base auto`          | Same, with the trunk found automatically   | Candidates: remote `HEAD`, `main`, `master`, `develop`, `release/*`; the candidate with the closest merge-base wins |
-| `--base new`           | What does this push add to the remote?     | pre-push stdin `remote sha → local sha`; otherwise the closest remote-tracking merge-base                           |
+`auto` is the default.
 
-`branch` and `auto` use three-dot semantics. `new` uses the remote tip, which is what the remote receives.
+| Mode            | Question                                       | Implementation                                                             |
+| --------------- | ---------------------------------------------- | -------------------------------------------------------------------------- |
+| `--base auto`   | What does the remote not have?                 | The remote-tracking ref with the closest merge-base                        |
+| `--base stable` | What did this branch change relative to trunk? | The closest trunk (`main`, `master`, `develop`, `release/*`) by merge-base |
+| `--base <ref>`  | What did I change relative to this ref?        | `merge-base(ref, HEAD)`                                                    |
 
-`auto` always prints the ref it chose. Run `git fetch` if the base ref is missing; DiffCov never fetches from a hook.
+All three use merge-base semantics. The resolved base is printed. Run
+`git fetch` if the base ref is missing; DiffCov never fetches from a hook.
 
 ## Vitest 4 reporter
 
@@ -116,32 +119,48 @@ new DiffCovReporter({ threshold: 90, failOnError: true })
 
 ## Configuration
 
-`diff-cov.config.mjs` at the repository root, or `package.json#diffCov`:
+No config is required. The defaults are:
+
+- report: `coverage/lcov.info`
+- base: `auto`
+- threshold: 90
+
+Optional config lives in `diff-cov.config.mjs`, `diff-cov.config.js`,
+`diff-cov.config.cjs`, or `package.json#diffCov`:
 
 ```js
 export default {
   base: 'auto',
-  scope: 'committed',
   coverage: ['coverage/lcov.info'],
-  include: ['src/**/*.{ts,tsx}'],
-  exclude: ['**/*.{test,spec}.*', '**/__tests__/**', '**/*.d.ts', '**/generated/**'],
   threshold: 90,
   perFileThreshold: 0,
-  missing: 'fail',
   advisory: false,
   allowStale: false,
 }
 ```
 
-When the CLI runs from a subdirectory, only files under that directory are measured. In a monorepo, `cd packages/app && npx diff-cov ...` checks that package, not its siblings. The reporter uses the Vitest project root the same way.
+When the CLI runs from a subdirectory, only files under that directory are
+measured. In a monorepo, `cd packages/app && npx diff-cov` checks that package,
+not its siblings. The reporter uses the Vitest project root the same way.
 
-`missing` controls a changed source file that is absent from the coverage report:
+### The coverage report is the source of truth
 
-- `fail` (default): exit 3. An untested new file must not pass silently.
-- `warn`: skip it and print a warning.
-- `ignore`: skip it silently.
+Only files present in the coverage report are measured. A changed file that is
+absent from the report is skipped (`not in coverage report`) and does not affect
+the threshold. A file that **is** in the report but whose changed lines have zero
+hits still counts as uncovered.
 
-With Vitest, set `coverage.include` to the source globs so untested files are emitted with zero hits.
+This means an untested new file is invisible unless the coverage run includes
+it. With Vitest, set `coverage.include` to the source globs so untested files are
+emitted with zero hits:
+
+```ts
+coverage: {
+  provider: 'v8',
+  include: ['src/**/*.{ts,tsx}'],
+  reporter: ['lcov'],
+}
+```
 
 ## Report
 
@@ -168,6 +187,7 @@ src/api/client.ts
 - Line coverage only. Branch coverage of changed lines is a separate metric.
 - Multi-line statements are attributed to their opening line by the coverage tool. A change that only touches a continuation line may be counted as uninstrumented.
 - The coverage report must refer to the same source revision as the diff. The CLI checks report freshness; the reporter always uses the in-memory map.
+- A changed file absent from the report is skipped, not failed. Configure the coverage run to include it if you want it measured.
 - Generated bundles and source maps are not resolved. Vitest's built-in providers report source paths, which is what DiffCov expects.
 
 ## Development

@@ -46,11 +46,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "fast-xml-parser": "^5.12.1",
-    "picomatch": "^4.0.7"
+    "fast-xml-parser": "^5.12.1"
   },
   "devDependencies": {
-    "@types/picomatch": "^4.0.3",
     "tsup": "^9.0.0",
     "typescript": "^5.9.3",
     "vitest": "4.1.9"

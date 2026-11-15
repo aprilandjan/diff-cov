@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { MissingCoverageError } from '../src/errors.js'
 import { buildReport } from '../src/report.js'
 import type { ChangedFile, CoverageSource, ResolvedBase } from '../src/types.js'
 
@@ -44,51 +43,29 @@ describe('buildReport', () => {
     expect(report.files[0]?.uncoveredLines).toEqual([2])
   })
 
-  it('fails closed when a changed file is missing from coverage', () => {
-    expect(() =>
-      buildReport({
-        changes: [change('src/new.ts', [1])],
-        bases: [base],
-        scope: 'committed',
-        coverage: coverage({}),
-      }),
-    ).toThrow(MissingCoverageError)
-  })
-
-  it('can warn instead of failing on a missing file', () => {
+  it('skips changed files that are not in the coverage report', () => {
     const report = buildReport({
-      changes: [change('src/new.ts', [1])],
+      changes: [change('src/new.ts', [1, 2]), change('README.md', [1])],
       bases: [base],
       scope: 'committed',
       coverage: coverage({}),
-      missing: 'warn',
     })
+
     expect(report.totals.measured).toBe(0)
-    expect(report.warnings.join('\n')).toContain('src/new.ts')
+    expect(report.totals.files).toBe(0)
+    expect(report.files.map((file) => file.reason)).toEqual(['not-in-report', 'not-in-report'])
   })
 
-  it('excludes test files and non-instrumented changes', () => {
+  it('counts a changed file whose lines are all uncovered', () => {
     const report = buildReport({
-      changes: [change('src/a.test.ts', [1]), change('src/a.ts', [1])],
+      changes: [change('src/a.ts', [1, 2])],
       bases: [base],
       scope: 'committed',
-      coverage: coverage({ 'src/a.ts': { 1: 1 } }),
+      coverage: coverage({ 'src/a.ts': { 1: 0, 2: 0 } }),
     })
 
-    expect(report.totals.measured).toBe(1)
-    expect(report.files.find((file) => file.path === 'src/a.test.ts')?.reason).toBe('excluded')
-  })
-
-  it('excludes tool config files by default', () => {
-    const report = buildReport({
-      changes: [change('vite.config.ts', [1]), change('src/config.ts', [1])],
-      bases: [base],
-      scope: 'committed',
-      coverage: coverage({ 'src/config.ts': { 1: 1 } }),
-    })
-
-    expect(report.totals.measured).toBe(1)
-    expect(report.files.find((file) => file.path === 'vite.config.ts')?.reason).toBe('excluded')
+    expect(report.totals).toMatchObject({ measured: 2, covered: 0, missing: 2 })
+    expect(report.totals.percentage).toBe(0)
   })
 
   it('skips files outside the project prefix', () => {
@@ -105,7 +82,7 @@ describe('buildReport', () => {
 
     expect(report.totals.measured).toBe(1)
     expect(report.files.find((file) => file.path === 'packages/b/src/b.ts')?.reason).toBe(
-      'not-included',
+      'outside-project',
     )
   })
 

@@ -16,7 +16,6 @@ export default defineConfig({
         base: 'HEAD',
         threshold: 90,
         failOnError: false,
-        missing: 'warn',
       }),
     ],
   },

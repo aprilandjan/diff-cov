@@ -41,10 +41,10 @@ modified line always has a head-side line number in `A`.
 - **Non-executable lines already excluded by the coverage report.** Blank
   lines, comments, braces, type-only declarations and similar lines are not
   executable, so they are not in `C`.
-- **Lines outside the configured scope.** Test files, generated code,
-  declarations and anything matched by `exclude` are skipped before the
-  intersection. In a monorepo, files outside the directory DiffCov runs from
-  are skipped too.
+- **Files absent from the coverage report.** The report is the source of truth
+  for which files are measured. A changed file that the report does not contain
+  is skipped before the intersection. In a monorepo, files outside the directory
+  DiffCov runs from are skipped too.
 
 ## Lines that are added but not instrumented
 
@@ -59,22 +59,18 @@ the coverage report does not model. Typical cases:
 They are **not** part of the denominator. The report shows the count so the
 number is not silently inflated or deflated.
 
-## Files missing from the coverage report
+## Files absent from the coverage report
 
-This is the most important failure mode. A changed file can be absent from the
-report because:
+The coverage report defines the universe of measured files. If a changed file
+is absent from the report, DiffCov skips it: it is not counted as 0%, it does
+not fail the check, and it is listed under `Skipped` as `not in coverage
+report`.
 
-- it is new and no test imports it, and `coverage.include` does not cover it;
-- the coverage run was partial (`--changed`, `related`, sharding);
-- the report was produced before the file existed.
-
-Default behaviour is `missing: "fail"`: the check exits with a configuration
-error instead of guessing. Treating the file as zero lines would let an
-untested new file pass. Treating every added line as uncovered would count
-comments and type declarations against the author.
-
-With Vitest, the fix is to set `coverage.include` to the source globs so
-untested files are still emitted with zero hits:
+This keeps the tool aligned with the coverage setup: what the coverage tool did
+not measure is not DiffCov's call. The trade-off is that a new file with no
+tests is invisible unless the coverage run includes it. With Vitest, set
+`coverage.include` to the source globs so untested files are emitted with zero
+hits:
 
 ```ts
 coverage: {
@@ -84,12 +80,15 @@ coverage: {
 }
 ```
 
+A file that **is** in the report but whose changed lines have zero hits still
+counts as uncovered and can fail the threshold.
+
 ## Zero denominator
 
 If no changed file has a measurable line — documentation-only changes, pure
-deletions, renames, or changes entirely outside the source scope — the result
-is a pass with `0 / 0` and an explicit "no measurable changed lines" note. It is
-not reported as 0%.
+deletions, renames, or changes entirely in files absent from the coverage
+report — the result is a pass with `0 / 0` and an explicit "no measurable
+changed lines" note. It is not reported as 0%.
 
 ## Threshold
 

@@ -3,20 +3,17 @@ import { readFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { DiffCovError } from './errors.js'
-import type { BaseSpec, MissingPolicy, Scope } from './types.js'
+import type { BaseSpec, Scope } from './types.js'
 
 export interface DiffCovConfig {
   base?: BaseSpec
   scope?: Scope
   coverage?: string[]
-  include?: string[]
-  exclude?: string[]
   threshold?: number
   /** Per-file line coverage threshold. */
   perFileThreshold?: number
   /** @deprecated Use perFileThreshold. */
   perFile?: number
-  missing?: MissingPolicy
   allowStale?: boolean
   includeUntracked?: boolean
   advisory?: boolean
@@ -29,12 +26,9 @@ const KEYS = new Set([
   'base',
   'scope',
   'coverage',
-  'include',
-  'exclude',
   'threshold',
   'perFileThreshold',
   'perFile',
-  'missing',
   'allowStale',
   'includeUntracked',
   'advisory',
@@ -86,8 +80,6 @@ export function validateConfig(value: unknown, source: string): DiffCovConfig {
   }
   if (value.coverage !== undefined)
     config.coverage = stringArray(value.coverage, 'coverage', source)
-  if (value.include !== undefined) config.include = stringArray(value.include, 'include', source)
-  if (value.exclude !== undefined) config.exclude = stringArray(value.exclude, 'exclude', source)
   if (value.threshold !== undefined)
     config.threshold = percentage(value.threshold, 'threshold', source)
   if (value.perFileThreshold !== undefined) {
@@ -95,12 +87,6 @@ export function validateConfig(value: unknown, source: string): DiffCovConfig {
   }
   if (value.perFile !== undefined) {
     config.perFile = percentage(value.perFile, 'perFile', source)
-  }
-  if (value.missing !== undefined) {
-    if (value.missing !== 'fail' && value.missing !== 'warn' && value.missing !== 'ignore') {
-      invalid(source, '"missing" must be "fail", "warn" or "ignore"')
-    }
-    config.missing = value.missing
   }
   if (value.allowStale !== undefined) {
     if (typeof value.allowStale !== 'boolean') invalid(source, '"allowStale" must be a boolean')

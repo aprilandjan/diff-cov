@@ -54,25 +54,27 @@ export function formatReport(report: Report, verdict: Verdict): string {
 
   const skipped = report.files.filter((file) => file.status === 'skipped')
   if (skipped.length > 0) {
+    const labels: Record<string, string> = {
+      'outside-project': 'outside project',
+      'not-in-report': 'not in coverage report',
+      'no-instrumented-lines': 'no instrumented lines',
+    }
     const byReason = new Map<string, number>()
     for (const file of skipped) {
       const reason = file.reason ?? 'skipped'
       byReason.set(reason, (byReason.get(reason) ?? 0) + 1)
     }
     const summary = [...byReason.entries()]
-      .map(([reason, count]) => `${count} ${reason}`)
+      .map(([reason, count]) => `${count} ${labels[reason] ?? reason}`)
       .join(', ')
     out.push('')
     out.push(`Skipped: ${skipped.length} file(s) (${summary})`)
 
     const notable = skipped.filter(
-      (file) =>
-        file.reason === 'excluded' ||
-        file.reason === 'missing-from-coverage' ||
-        file.reason === 'no-instrumented-lines',
+      (file) => file.reason === 'not-in-report' || file.reason === 'no-instrumented-lines',
     )
     for (const file of notable.slice(0, 10)) {
-      out.push(`  ${file.path} (${file.reason ?? 'skipped'})`)
+      out.push(`  ${file.path} (${labels[file.reason ?? ''] ?? 'skipped'})`)
     }
     if (notable.length > 10) out.push(`  … +${notable.length - 10} more`)
   }

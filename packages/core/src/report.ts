@@ -1,29 +1,12 @@
-import picomatch from 'picomatch'
-import { MissingCoverageError } from './errors.js'
 import type {
   ChangedFile,
   CoverageSource,
   FileReport,
-  MissingPolicy,
   Report,
   ReportTotals,
   ResolvedBase,
   Scope,
 } from './types.js'
-
-export const DEFAULT_INCLUDE = ['**/*.{js,jsx,ts,tsx,mjs,cjs,mts,cts,vue,svelte}']
-
-export const DEFAULT_EXCLUDE = [
-  '**/*.{test,spec}.{js,jsx,ts,tsx,mjs,cjs,mts,cts}',
-  '**/__tests__/**',
-  '**/*.d.ts',
-  '**/dist/**',
-  '**/coverage/**',
-  '**/*.stories.*',
-  '**/generated/**',
-  '**/*.config.{js,jsx,ts,tsx,mjs,cjs,mts,cts}',
-  '**/.*rc.{js,cjs,mjs,ts,json}',
-]
 
 export interface BuildReportOptions {
   changes: ChangedFile[]
@@ -31,9 +14,6 @@ export interface BuildReportOptions {
   scope: Scope
   coverage: CoverageSource
   coverageFiles?: string[]
-  include?: string[]
-  exclude?: string[]
-  missing?: MissingPolicy
   /** Only consider paths under this repository-relative directory. */
   pathPrefix?: string
 }
@@ -43,38 +23,24 @@ function percentage(covered: number, measured: number): number {
 }
 
 export function buildReport(options: BuildReportOptions): Report {
-  const include = options.include ?? DEFAULT_INCLUDE
-  const exclude = options.exclude ?? DEFAULT_EXCLUDE
-  const isIncluded = picomatch(include, { dot: true })
-  const isExcluded = picomatch(exclude, { dot: true })
-  const missingPolicy = options.missing ?? 'fail'
   const prefix = options.pathPrefix?.replace(/\/+$/, '')
-
   const files: FileReport[] = []
   const warnings = options.bases.flatMap((base) => base.warnings)
-  const missingFiles: string[] = []
 
   for (const change of [...options.changes].sort((a, b) => a.path.localeCompare(b.path))) {
     const added = change.added.size
     const path = change.path
 
     if (prefix && path !== prefix && !path.startsWith(`${prefix}/`)) {
-      files.push(skipped(path, change, added, 'not-included'))
-      continue
-    }
-    if (!isIncluded(path)) {
-      files.push(skipped(path, change, added, 'not-included'))
-      continue
-    }
-    if (isExcluded(path)) {
-      files.push(skipped(path, change, added, 'excluded'))
+      files.push(skipped(path, change, added, 'outside-project'))
       continue
     }
 
     const hits = options.coverage.lineHits(path)
     if (!hits) {
-      missingFiles.push(path)
-      files.push(skipped(path, change, added, 'missing-from-coverage'))
+      // The coverage report is the source of truth. A changed file that the
+      // report does not contain is not measured and does not affect the gate.
+      files.push(skipped(path, change, added, 'not-in-report'))
       continue
     }
 
@@ -100,17 +66,6 @@ export function buildReport(options: BuildReportOptions): Report {
       percentage: percentage(covered, measuredLines.length),
       uncoveredLines,
     })
-  }
-
-  if (missingFiles.length > 0) {
-    if (missingPolicy === 'fail') {
-      throw new MissingCoverageError(missingFiles)
-    }
-    if (missingPolicy === 'warn') {
-      warnings.push(
-        `Coverage report has no entry for ${missingFiles.length} changed file(s): ${missingFiles.join(', ')}`,
-      )
-    }
   }
 
   const measuredFiles = files.filter((file) => file.status === 'measured')
@@ -141,8 +96,6 @@ export function buildReport(options: BuildReportOptions): Report {
     scope: options.scope,
     bases: options.bases,
     coverageFiles: options.coverageFiles ?? [],
-    include,
-    exclude,
     ...(prefix ? { pathPrefix: prefix } : {}),
     files,
     totals,

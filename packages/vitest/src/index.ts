@@ -14,22 +14,18 @@ import {
   type BaseSpec,
   type CoverageMapLike,
   type DiffCovConfig,
-  type MissingPolicy,
   type Verdict,
 } from '@diff-cov/core'
 import type { Reporter, SerializedError, TestModule, TestRunEndReason, Vitest } from 'vitest/node'
 
 export interface DiffCovReporterOptions {
-  /** Base ref, "auto" or "new". Defaults to the config file, then "auto". */
+  /** Base ref, "auto" or "stable". Defaults to the config file, then "auto". */
   base?: BaseSpec
-  include?: string[]
-  exclude?: string[]
   /** Total threshold. Defaults to the config file, then 0 (report only). */
   threshold?: number
   perFileThreshold?: number
   /** @deprecated Use perFileThreshold. */
   perFile?: number
-  missing?: MissingPolicy
   /** Set the process exit code when the threshold fails. */
   failOnError?: boolean
   /** Report in watch mode too. Off by default. */
@@ -121,9 +117,6 @@ export class DiffCovReporter implements Reporter {
           projectRoot,
           reportDir: projectRoot,
         }),
-        include: this.options.include ?? config.include,
-        exclude: this.options.exclude ?? config.exclude,
-        missing: this.options.missing ?? config.missing ?? 'fail',
         pathPrefix,
       })
 

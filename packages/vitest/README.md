@@ -33,8 +33,11 @@ It is report-only by default. To enforce the threshold:
 new DiffCovReporter({ threshold: 90, failOnError: true })
 ```
 
-Options: `base`, `include`, `exclude`, `threshold`, `perFileThreshold`, `missing`,
-`failOnError`, `enabledInWatch`, `config`, `report`.
+Options: `base`, `threshold`, `perFileThreshold`, `failOnError`,
+`enabledInWatch`, `config`, `report`.
+
+The in-memory coverage map is the source of truth: changed files that Vitest did
+not instrument are skipped. It uses the `auto` base by default.
 
 Requires Vitest 4.
 

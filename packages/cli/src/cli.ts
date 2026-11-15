@@ -21,9 +21,8 @@ export function createProgram(): Command {
     .version(__DIFF_COV_VERSION__)
     .option('--cwd <dir>', 'working directory', process.cwd())
     .option('--config <path>', 'config file')
-    .option('--base <ref>', 'base ref, "auto" or "new"')
+    .option('--base <ref>', 'base ref, "auto" (default) or "stable"')
     .addOption(new Option('--scope <scope>', 'diff scope').choices(['committed', 'worktree']))
-    .option('--push', 'pre-push mode: read refs from stdin')
     .option('--coverage <path>', 'coverage report path or glob (repeatable)', collect, [])
     .option('--threshold <percent>', 'total diff coverage threshold', parseNumber)
     .option('--per-file-threshold <percent>', 'per-file diff coverage threshold', parseNumber)
@@ -32,16 +31,8 @@ export function createProgram(): Command {
         .argParser(parseNumber)
         .hideHelp(),
     )
-    .addOption(
-      new Option(
-        '--missing <policy>',
-        'what to do when a changed file is absent from coverage',
-      ).choices(['fail', 'warn', 'ignore']),
-    )
     .option('--allow-stale', 'accept a coverage report older than the changed files')
     .option('--advisory', 'report threshold failures without failing the process')
-    .option('--include <glob>', 'source glob to include (repeatable)', collect, [])
-    .option('--exclude <glob>', 'glob to exclude (repeatable)', collect, [])
     .option('--json', 'print JSON instead of text')
     .option('--report <path>', 'write a JSON report')
     .option('--no-color', 'disable color')
