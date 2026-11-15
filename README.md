@@ -158,6 +158,7 @@ src/api/client.ts
 pnpm install
 pnpm build
 pnpm test
+pnpm format:check
 pnpm --filter diff-cov-example-vitest-app test:coverage
 node packages/cli/dist/index.js --cwd examples/vitest-app --base auto --threshold 90
 
@@ -166,3 +167,11 @@ pnpm --filter diff-cov-example-vitest-app test:diff-cov
 ```
 
 The example project under `examples/vitest-app` is a small Vitest 4 app with covered, partially covered, and untested files.
+
+Hooks are installed by Husky:
+
+- `pre-commit` runs `lint-staged` (Prettier on staged files).
+- `commit-msg` runs commitlint with Conventional Commits.
+- `pre-push` runs typecheck and tests.
+
+CI runs formatting, typechecking, the build, the test suite, and both lcov and Cobertura smoke checks on Node 22 and 24.
