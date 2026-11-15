@@ -4,6 +4,15 @@
   "description": "Compute line coverage of added and modified lines from a git diff.",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aprilandjan/diff-cov.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/aprilandjan/diff-cov#readme",
+  "bugs": {
+    "url": "https://github.com/aprilandjan/diff-cov/issues"
+  },
   "keywords": [
     "coverage",
     "diff",

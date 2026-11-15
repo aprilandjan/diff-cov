@@ -4,6 +4,15 @@
   "description": "Pre-push diff coverage gate for git and Vitest.",
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aprilandjan/diff-cov.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/aprilandjan/diff-cov#readme",
+  "bugs": {
+    "url": "https://github.com/aprilandjan/diff-cov/issues"
+  },
   "keywords": [
     "coverage",
     "diff",
