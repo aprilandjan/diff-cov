@@ -188,3 +188,25 @@ Hooks are installed by Husky:
 - `pre-push` runs typecheck and tests.
 
 CI runs formatting, typechecking, the build, the test suite, and both lcov and Cobertura smoke checks on Node 22 and 24.
+
+## Release
+
+The first publish is manual. After the packages exist on npm, releases use
+changesets and npm trusted publishing; no long-lived `NPM_TOKEN` is involved.
+
+1. Run `pnpm changeset` and commit the changeset with the change.
+2. Merge to `main`. `release.yml` opens or updates a "Version Packages" PR.
+3. Merge that PR. The workflow publishes with OIDC and creates GitHub releases.
+
+Before the first automated release:
+
+- create the GitHub repository and push this history;
+- for each package on npmjs.com, open **Settings → Trusted Publisher → GitHub
+  Actions** and configure the repository, the workflow filename `release.yml`,
+  and allow direct `npm publish` (new connections default to `npm stage publish`
+  only);
+- in the GitHub repository, enable **Settings → Actions → General → Allow GitHub
+  Actions to create and approve pull requests**.
+
+A new trusted publisher connection must complete its first publish within two
+days, so create it when a version PR is ready to merge.
