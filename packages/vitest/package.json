@@ -1,9 +1,18 @@
 {
   "name": "@diff-cov/vitest",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Vitest 4 reporter for diff coverage.",
   "type": "module",
   "license": "MIT",
+  "keywords": [
+    "coverage",
+    "diff",
+    "vitest",
+    "reporter"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",

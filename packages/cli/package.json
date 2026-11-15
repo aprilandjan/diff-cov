@@ -1,9 +1,21 @@
 {
   "name": "@diff-cov/cli",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Pre-push diff coverage gate for git and Vitest.",
   "type": "module",
   "license": "MIT",
+  "keywords": [
+    "coverage",
+    "diff",
+    "lcov",
+    "cobertura",
+    "vitest",
+    "husky",
+    "pre-push"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "bin": {
     "diff-cov": "./dist/index.js"
   },
