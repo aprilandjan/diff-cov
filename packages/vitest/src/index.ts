@@ -26,6 +26,8 @@ export interface DiffCovReporterOptions {
   exclude?: string[]
   /** Total threshold. Defaults to the config file, then 0 (report only). */
   threshold?: number
+  perFileThreshold?: number
+  /** @deprecated Use perFileThreshold. */
   perFile?: number
   missing?: MissingPolicy
   /** Set the process exit code when the threshold fails. */
@@ -136,7 +138,11 @@ export class DiffCovReporter implements Reporter {
       }
 
       const threshold = this.options.threshold ?? config.threshold ?? 0
-      const perFile = this.options.perFile ?? config.perFile
+      const perFile =
+        this.options.perFileThreshold ??
+        this.options.perFile ??
+        config.perFileThreshold ??
+        config.perFile
       const verdict = evaluateThreshold(report, {
         total: threshold,
         ...(perFile !== undefined ? { perFile } : {}),

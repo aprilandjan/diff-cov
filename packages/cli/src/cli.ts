@@ -26,7 +26,12 @@ export function createProgram(): Command {
     .option('--push', 'pre-push mode: read refs from stdin')
     .option('--coverage <path>', 'coverage report path or glob (repeatable)', collect, [])
     .option('--threshold <percent>', 'total diff coverage threshold', parseNumber)
-    .option('--per-file <percent>', 'per-file diff coverage threshold', parseNumber)
+    .option('--per-file-threshold <percent>', 'per-file diff coverage threshold', parseNumber)
+    .addOption(
+      new Option('--per-file <percent>', 'deprecated alias for --per-file-threshold')
+        .argParser(parseNumber)
+        .hideHelp(),
+    )
     .addOption(
       new Option(
         '--missing <policy>',

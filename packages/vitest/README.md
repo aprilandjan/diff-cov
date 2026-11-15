@@ -33,7 +33,7 @@ It is report-only by default. To enforce the threshold:
 new DiffCovReporter({ threshold: 90, failOnError: true })
 ```
 
-Options: `base`, `include`, `exclude`, `threshold`, `perFile`, `missing`,
+Options: `base`, `include`, `exclude`, `threshold`, `perFileThreshold`, `missing`,
 `failOnError`, `enabledInWatch`, `config`, `report`.
 
 Requires Vitest 4.

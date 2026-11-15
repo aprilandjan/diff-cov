@@ -12,6 +12,9 @@ export interface DiffCovConfig {
   include?: string[]
   exclude?: string[]
   threshold?: number
+  /** Per-file line coverage threshold. */
+  perFileThreshold?: number
+  /** @deprecated Use perFileThreshold. */
   perFile?: number
   missing?: MissingPolicy
   allowStale?: boolean
@@ -29,6 +32,7 @@ const KEYS = new Set([
   'include',
   'exclude',
   'threshold',
+  'perFileThreshold',
   'perFile',
   'missing',
   'allowStale',
@@ -86,7 +90,12 @@ export function validateConfig(value: unknown, source: string): DiffCovConfig {
   if (value.exclude !== undefined) config.exclude = stringArray(value.exclude, 'exclude', source)
   if (value.threshold !== undefined)
     config.threshold = percentage(value.threshold, 'threshold', source)
-  if (value.perFile !== undefined) config.perFile = percentage(value.perFile, 'perFile', source)
+  if (value.perFileThreshold !== undefined) {
+    config.perFileThreshold = percentage(value.perFileThreshold, 'perFileThreshold', source)
+  }
+  if (value.perFile !== undefined) {
+    config.perFile = percentage(value.perFile, 'perFile', source)
+  }
   if (value.missing !== undefined) {
     if (value.missing !== 'fail' && value.missing !== 'warn' && value.missing !== 'ignore') {
       invalid(source, '"missing" must be "fail", "warn" or "ignore"')

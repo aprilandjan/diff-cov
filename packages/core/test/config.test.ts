@@ -16,7 +16,7 @@ describe('validateConfig', () => {
           include: ['src/**/*.ts'],
           exclude: ['**/*.test.ts'],
           threshold: 90,
-          perFile: 80,
+          perFileThreshold: 80,
           missing: 'fail',
           allowStale: false,
           includeUntracked: true,
@@ -32,13 +32,17 @@ describe('validateConfig', () => {
       include: ['src/**/*.ts'],
       exclude: ['**/*.test.ts'],
       threshold: 90,
-      perFile: 80,
+      perFileThreshold: 80,
       missing: 'fail',
       allowStale: false,
       includeUntracked: true,
       advisory: true,
       report: 'coverage/diff-cov.json',
     })
+  })
+
+  it('still accepts the deprecated perFile key', () => {
+    expect(validateConfig({ perFile: 80 }, 'test')).toEqual({ perFile: 80 })
   })
 
   it('rejects unknown keys', () => {

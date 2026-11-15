@@ -38,6 +38,8 @@ export interface CliOptions {
   push?: boolean
   coverage?: string[]
   threshold?: number
+  perFileThreshold?: number
+  /** @deprecated Use perFileThreshold. */
   perFile?: number
   missing?: MissingPolicy
   allowStale?: boolean
@@ -198,7 +200,8 @@ export async function run(options: CliOptions): Promise<number> {
   const exclude = options.exclude?.length ? options.exclude : config.exclude
   const missing: MissingPolicy = options.missing ?? config.missing ?? 'fail'
   const threshold = options.threshold ?? config.threshold ?? 90
-  const perFile = options.perFile ?? config.perFile
+  const perFile =
+    options.perFileThreshold ?? options.perFile ?? config.perFileThreshold ?? config.perFile
   const relativeCwd = relative(root, cwd)
   const pathPrefix = relativeCwd && !relativeCwd.startsWith('..') ? toPosix(relativeCwd) : undefined
 

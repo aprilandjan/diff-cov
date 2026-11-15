@@ -126,7 +126,7 @@ export default {
   include: ['src/**/*.{ts,tsx}'],
   exclude: ['**/*.{test,spec}.*', '**/__tests__/**', '**/*.d.ts', '**/generated/**'],
   threshold: 90,
-  perFile: 0,
+  perFileThreshold: 0,
   missing: 'fail',
   advisory: false,
   allowStale: false,
