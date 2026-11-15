@@ -1,6 +1,8 @@
 import { Command, Option } from 'commander'
 import { exitCodeFor, run, type CliOptions } from './run.js'
 
+declare const __DIFF_COV_VERSION__: string
+
 function collect(value: string, previous: string[]): string[] {
   return [...previous, value]
 }
@@ -16,7 +18,7 @@ export function createProgram(): Command {
   program
     .name('diff-cov')
     .description('Line coverage of the lines a git diff adds or modifies.')
-    .version('0.0.0')
+    .version(__DIFF_COV_VERSION__)
     .option('--cwd <dir>', 'working directory', process.cwd())
     .option('--config <path>', 'config file')
     .option('--base <ref>', 'base ref, "auto" or "new"')
