@@ -40,7 +40,12 @@ export function normalizeCoveragePath(raw: string, context: PathContext): string
 
   const projectRoot = context.projectRoot ? canonical(context.projectRoot) : null
   const reportDir = canonical(context.reportDir)
+  // lcov paths are usually relative to the project that produced the report.
+  // For a per-package report at packages/a/coverage/lcov.info, that root is
+  // packages/a, not the repository root.
+  const reportRoot = resolve(reportDir, '..')
   const candidates = [
+    resolve(reportRoot, cleaned),
     projectRoot ? resolve(projectRoot, cleaned) : null,
     resolve(root, cleaned),
     resolve(reportDir, cleaned),
@@ -48,6 +53,6 @@ export function normalizeCoveragePath(raw: string, context: PathContext): string
   ].filter((candidate): candidate is string => candidate !== null)
 
   const found = candidates.find((candidate) => existsSync(candidate))
-  const chosen = canonical(found ?? candidates[0] ?? resolve(root, cleaned))
+  const chosen = canonical(found ?? resolve(reportRoot, cleaned))
   return toPosix(relative(root, chosen))
 }

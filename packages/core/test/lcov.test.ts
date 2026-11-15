@@ -29,6 +29,22 @@ describe('parseLcov', () => {
     expect(source.lineHits('src/a.ts')).toEqual({ 1: 1, 2: 3 })
   })
 
+  it('resolves paths relative to a per-package report directory', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'diff-cov-lcov-'))
+    await mkdir(join(root, 'packages', 'a', 'src'), { recursive: true })
+    await writeFile(join(root, 'packages', 'a', 'src', 'math.ts'), 'x\n', 'utf8')
+
+    const lcov = ['SF:src/math.ts', 'DA:1,1', 'end_of_record', ''].join('\n')
+    const source = parseLcov(lcov, {
+      root,
+      projectRoot: root,
+      reportDir: join(root, 'packages', 'a', 'coverage'),
+    })
+
+    expect(source.files()).toEqual(['packages/a/src/math.ts'])
+    expect(source.lineHits('packages/a/src/math.ts')).toEqual({ 1: 1 })
+  })
+
   it('merges duplicate records with max hits', async () => {
     const root = await makeRoot()
     const lcov = [
