@@ -81,6 +81,7 @@ export interface Report {
   coverageFiles: string[]
   include: string[]
   exclude: string[]
+  pathPrefix?: string
   files: FileReport[]
   totals: ReportTotals
   warnings: string[]

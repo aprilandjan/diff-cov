@@ -79,6 +79,24 @@ describe('buildReport', () => {
     expect(report.files.find((file) => file.path === 'src/a.test.ts')?.reason).toBe('excluded')
   })
 
+  it('skips files outside the project prefix', () => {
+    const report = buildReport({
+      changes: [change('packages/a/src/a.ts', [1]), change('packages/b/src/b.ts', [1])],
+      bases: [base],
+      scope: 'worktree',
+      coverage: coverage({
+        'packages/a/src/a.ts': { 1: 1 },
+        'packages/b/src/b.ts': { 1: 0 },
+      }),
+      pathPrefix: 'packages/a',
+    })
+
+    expect(report.totals.measured).toBe(1)
+    expect(report.files.find((file) => file.path === 'packages/b/src/b.ts')?.reason).toBe(
+      'not-included',
+    )
+  })
+
   it('passes with zero measured lines', () => {
     const report = buildReport({
       changes: [],

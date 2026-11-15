@@ -34,6 +34,8 @@ export interface BuildReportOptions {
   include?: string[]
   exclude?: string[]
   missing?: MissingPolicy
+  /** Only consider paths under this repository-relative directory. */
+  pathPrefix?: string
 }
 
 function percentage(covered: number, measured: number): number {
@@ -46,6 +48,7 @@ export function buildReport(options: BuildReportOptions): Report {
   const isIncluded = picomatch(include, { dot: true })
   const isExcluded = picomatch(exclude, { dot: true })
   const missingPolicy = options.missing ?? 'fail'
+  const prefix = options.pathPrefix?.replace(/\/+$/, '')
 
   const files: FileReport[] = []
   const warnings = options.bases.flatMap((base) => base.warnings)
@@ -55,6 +58,10 @@ export function buildReport(options: BuildReportOptions): Report {
     const added = change.added.size
     const path = change.path
 
+    if (prefix && path !== prefix && !path.startsWith(`${prefix}/`)) {
+      files.push(skipped(path, change, added, 'not-included'))
+      continue
+    }
     if (!isIncluded(path)) {
       files.push(skipped(path, change, added, 'not-included'))
       continue
@@ -134,6 +141,7 @@ export function buildReport(options: BuildReportOptions): Report {
     coverageFiles: options.coverageFiles ?? [],
     include,
     exclude,
+    ...(prefix ? { pathPrefix: prefix } : {}),
     files,
     totals,
     warnings,

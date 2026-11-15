@@ -19,11 +19,11 @@ export function formatReport(report: Report, verdict: Verdict): string {
     `Diff coverage ${formatPercent(totals.percentage)} (${totals.covered}/${totals.measured})  ${status}`,
   )
 
-  if (verdict.total !== undefined) {
-    out.push(
-      `Threshold: ${verdict.total}% total` +
-        (verdict.perFile !== undefined ? `, ${verdict.perFile}% per file` : ''),
-    )
+  if (verdict.total !== undefined || verdict.perFile !== undefined) {
+    const parts: string[] = []
+    if (verdict.total !== undefined) parts.push(`${verdict.total}% total`)
+    if (verdict.perFile !== undefined) parts.push(`${verdict.perFile}% per file`)
+    out.push(`Threshold: ${parts.join(', ')}`)
   } else {
     out.push('Threshold: none (report only)')
   }

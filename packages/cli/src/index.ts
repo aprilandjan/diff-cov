@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { realpathSync } from 'node:fs'
 import { mkdir, stat, writeFile } from 'node:fs/promises'
 import { dirname, relative, resolve } from 'node:path'
 import { Command, Option } from 'commander'
@@ -16,6 +17,7 @@ import {
   refExists,
   resolveBase,
   revParse,
+  toPosix,
   type BaseSpec,
   type ChangedFile,
   type DiffCovConfig,
@@ -181,9 +183,19 @@ function exitCodeFor(error: unknown): number {
 }
 
 async function run(options: CliOptions): Promise<number> {
-  const cwd = resolve(options.cwd ?? process.cwd())
+  const requestedCwd = resolve(options.cwd ?? process.cwd())
+  const cwd = (() => {
+    try {
+      return realpathSync(requestedCwd)
+    } catch {
+      return requestedCwd
+    }
+  })()
   const root = await getRepoRoot(cwd)
-  const config: DiffCovConfig = await loadConfig(root, options.config)
+  const localConfig = await loadConfig(cwd, options.config)
+  const rootConfig: DiffCovConfig =
+    !options.config && cwd !== root ? await loadConfig(root) : {}
+  const config: DiffCovConfig = { ...rootConfig, ...localConfig }
 
   const scope: Scope = options.scope ?? config.scope ?? 'committed'
   const base: BaseSpec = options.base ?? config.base ?? (options.push ? 'new' : 'auto')
@@ -197,6 +209,9 @@ async function run(options: CliOptions): Promise<number> {
   const missing: MissingPolicy = options.missing ?? config.missing ?? 'fail'
   const threshold = options.threshold ?? config.threshold ?? 90
   const perFile = options.perFile ?? config.perFile
+  const relativeCwd = relative(root, cwd)
+  const pathPrefix =
+    relativeCwd && !relativeCwd.startsWith('..') ? toPosix(relativeCwd) : undefined
 
   const loaded = await loadCoverage(root, coveragePatterns, cwd)
   if (options.verbose) {
@@ -234,6 +249,7 @@ async function run(options: CliOptions): Promise<number> {
     include,
     exclude,
     missing,
+    pathPrefix,
   })
 
   const measuredPaths = report.files
@@ -251,7 +267,7 @@ async function run(options: CliOptions): Promise<number> {
   const verdict: Verdict = evaluateThreshold(report, { total: threshold, ...(perFile !== undefined ? { perFile } : {}) })
 
   if (options.report) {
-    const path = resolve(root, options.report)
+    const path = resolve(cwd, options.report)
     await mkdir(dirname(path), { recursive: true })
     await writeFile(path, JSON.stringify({ ...report, verdict }, null, 2) + '\n', 'utf8')
   }

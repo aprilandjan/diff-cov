@@ -115,6 +115,8 @@ export default {
 }
 ```
 
+When the CLI runs from a subdirectory, only files under that directory are measured. In a monorepo, `cd packages/app && npx diff-cov ...` checks that package, not its siblings. The reporter uses the Vitest project root the same way.
+
 `missing` controls a changed source file that is absent from the coverage report:
 
 - `fail` (default): exit 3. An untested new file must not pass silently.
@@ -158,6 +160,9 @@ pnpm build
 pnpm test
 pnpm --filter diff-cov-example-vitest-app test:coverage
 node packages/cli/dist/index.js --cwd examples/vitest-app --base auto --threshold 90
+
+# Reporter demo. It uses base HEAD, so uncommitted worktree changes are measured.
+pnpm --filter diff-cov-example-vitest-app test:diff-cov
 ```
 
 The example project under `examples/vitest-app` is a small Vitest 4 app with covered, partially covered, and untested files.

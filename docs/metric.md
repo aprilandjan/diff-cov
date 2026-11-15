@@ -43,7 +43,8 @@ modified line always has a head-side line number in `A`.
   executable, so they are not in `C`.
 - **Lines outside the configured scope.** Test files, generated code,
   declarations and anything matched by `exclude` are skipped before the
-  intersection.
+  intersection. In a monorepo, files outside the directory DiffCov runs from
+  are skipped too.
 
 ## Lines that are added but not instrumented
 

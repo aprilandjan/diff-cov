@@ -13,6 +13,7 @@ export interface CollectDiffCoverageOptions {
   exclude?: string[]
   missing?: MissingPolicy
   includeUntracked?: boolean
+  pathPrefix?: string
 }
 
 export async function collectDiffCoverage(
@@ -34,5 +35,6 @@ export async function collectDiffCoverage(
     include: options.include,
     exclude: options.exclude,
     missing: options.missing,
+    pathPrefix: options.pathPrefix,
   })
 }

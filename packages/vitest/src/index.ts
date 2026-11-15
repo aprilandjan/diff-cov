@@ -1,5 +1,6 @@
+import { realpathSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
-import { dirname, resolve } from 'node:path'
+import { dirname, relative, resolve } from 'node:path'
 import {
   buildReport,
   collectChanges,
@@ -9,6 +10,7 @@ import {
   getRepoRoot,
   loadConfig,
   resolveBase,
+  toPosix,
   type BaseSpec,
   type CoverageMapLike,
   type DiffCovConfig,
@@ -92,9 +94,19 @@ export class DiffCovReporter implements Reporter {
 
     try {
       const config: DiffCovConfig = await loadConfig(root, this.options.config)
-      const gitRoot = await getRepoRoot(root)
-      const base = await resolveBase(root, this.options.base ?? config.base ?? 'auto')
-      const changes = await collectChanges(root, base, {
+      const projectRoot = (() => {
+        try {
+          return realpathSync(root)
+        } catch {
+          return root
+        }
+      })()
+      const gitRoot = await getRepoRoot(projectRoot)
+      const relativeRoot = relative(gitRoot, projectRoot)
+      const pathPrefix =
+        relativeRoot && !relativeRoot.startsWith('..') ? toPosix(relativeRoot) : undefined
+      const base = await resolveBase(projectRoot, this.options.base ?? config.base ?? 'auto')
+      const changes = await collectChanges(projectRoot, base, {
         scope: 'worktree',
         includeUntracked: true,
       })
@@ -104,12 +116,13 @@ export class DiffCovReporter implements Reporter {
         scope: 'worktree',
         coverage: fromCoverageMap(this.coverageMap, {
           root: gitRoot,
-          projectRoot: root,
-          reportDir: root,
+          projectRoot,
+          reportDir: projectRoot,
         }),
         include: this.options.include ?? config.include,
         exclude: this.options.exclude ?? config.exclude,
         missing: this.options.missing ?? config.missing ?? 'fail',
+        pathPrefix,
       })
 
       const vitestConfig = ctx.config as {
@@ -134,7 +147,7 @@ export class DiffCovReporter implements Reporter {
 
       const reportPath = this.options.report ?? config.report
       if (reportPath) {
-        const path = resolve(root, reportPath)
+        const path = resolve(projectRoot, reportPath)
         await mkdir(dirname(path), { recursive: true })
         await writeFile(path, JSON.stringify({ ...report, verdict }, null, 2) + '\n', 'utf8')
       }

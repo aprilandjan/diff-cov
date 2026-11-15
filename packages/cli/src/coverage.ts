@@ -25,12 +25,18 @@ export async function loadCoverage(
   patterns: string[] = DEFAULT_COVERAGE_PATTERNS,
   projectRoot: string = root,
 ): Promise<LoadedCoverage> {
-  const files = await glob(patterns, {
-    cwd: root,
-    absolute: true,
-    onlyFiles: true,
-    dot: true,
-  })
+  const find = (cwd: string) =>
+    glob(patterns, {
+      cwd,
+      absolute: true,
+      onlyFiles: true,
+      dot: true,
+    })
+
+  let files = await find(projectRoot)
+  if (files.length === 0 && projectRoot !== root) {
+    files = await find(root)
+  }
 
   if (files.length === 0) {
     throw new DiffCovError(
