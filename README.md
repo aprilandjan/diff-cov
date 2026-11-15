@@ -190,48 +190,11 @@ src/api/client.ts
 - A changed file absent from the report is skipped, not failed. Configure the coverage run to include it if you want it measured.
 - Generated bundles and source maps are not resolved. Vitest's built-in providers report source paths, which is what DiffCov expects.
 
-## Development
+## Contributing
 
-```bash
-pnpm install
-pnpm build
-pnpm test
-pnpm format:check
-pnpm --filter diff-cov-example-vitest-app test:coverage
-node packages/cli/dist/index.js --cwd examples/vitest-app --base auto --threshold 90
+See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, checks, hooks, and the
+changeset policy.
 
-# Reporter demo. It uses base HEAD, so uncommitted worktree changes are measured.
-pnpm --filter diff-cov-example-vitest-app test:diff-cov
-```
+## License
 
-The example project under `examples/vitest-app` is a small Vitest 4 app with covered, partially covered, and untested files.
-
-Hooks are installed by Husky:
-
-- `pre-commit` runs `lint-staged` (Prettier on staged files).
-- `commit-msg` runs commitlint with Conventional Commits.
-- `pre-push` runs typecheck and tests.
-
-CI runs formatting, typechecking, the build, the test suite, and both lcov and Cobertura smoke checks on Node 22 and 24.
-
-## Release
-
-The first publish is manual. After the packages exist on npm, releases use
-changesets and npm trusted publishing; no long-lived `NPM_TOKEN` is involved.
-
-1. Run `pnpm changeset` and commit the changeset with the change.
-2. Merge to `main`. `release.yml` opens or updates a "Version Packages" PR.
-3. Merge that PR. The workflow publishes with OIDC and creates GitHub releases.
-
-Before the first automated release:
-
-- create the GitHub repository and push this history;
-- for each package on npmjs.com, open **Settings → Trusted Publisher → GitHub
-  Actions** and configure the repository, the workflow filename `release.yml`,
-  and allow direct `npm publish` (new connections default to `npm stage publish`
-  only);
-- in the GitHub repository, enable **Settings → Actions → General → Allow GitHub
-  Actions to create and approve pull requests**.
-
-A new trusted publisher connection must complete its first publish within two
-days, so create it when a version PR is ready to merge.
+MIT
