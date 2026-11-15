@@ -19,7 +19,7 @@
     "version-packages": "changeset version",
     "release": "pnpm build && changeset publish",
     "example:coverage": "pnpm --filter diff-cov-example-vitest-app run test:coverage",
-    "example:diff-cov": "pnpm --filter diff-cov-cli run build && node packages/cli/dist/index.js --cwd examples/vitest-app --base auto --threshold 90"
+    "example:diff-cov": "pnpm --filter @diff-cov/cli run build && node packages/cli/dist/index.js --cwd examples/vitest-app --base auto --threshold 90"
   },
   "devDependencies": {
     "@changesets/cli": "^3.0.3",

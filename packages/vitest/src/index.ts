@@ -16,7 +16,7 @@ import {
   type DiffCovConfig,
   type MissingPolicy,
   type Verdict,
-} from 'diff-cov-core'
+} from '@diff-cov/core'
 import type { Reporter, SerializedError, TestModule, TestRunEndReason, Vitest } from 'vitest/node'
 
 export interface DiffCovReporterOptions {

@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config'
-import DiffCovReporter from 'diff-cov-vitest'
+import DiffCovReporter from '@diff-cov/vitest'
 
 export default defineConfig({
   test: {

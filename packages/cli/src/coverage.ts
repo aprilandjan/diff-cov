@@ -7,7 +7,7 @@ import {
   parseCobertura,
   parseLcov,
   type CoverageSource,
-} from 'diff-cov-core'
+} from '@diff-cov/core'
 
 export const DEFAULT_COVERAGE_PATTERNS = [
   'coverage/lcov.info',

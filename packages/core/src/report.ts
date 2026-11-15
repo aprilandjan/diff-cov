@@ -21,6 +21,8 @@ export const DEFAULT_EXCLUDE = [
   '**/coverage/**',
   '**/*.stories.*',
   '**/generated/**',
+  '**/*.config.{js,jsx,ts,tsx,mjs,cjs,mts,cts}',
+  '**/.*rc.{js,cjs,mjs,ts,json}',
 ]
 
 export interface BuildReportOptions {

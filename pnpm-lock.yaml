@@ -41,12 +41,12 @@ importers:
 
   examples/vitest-app:
     devDependencies:
+      '@diff-cov/vitest':
+        specifier: workspace:*
+        version: link:../../packages/vitest
       '@vitest/coverage-v8':
         specifier: 4.1.9
         version: 4.1.9(vitest@4.1.9)
-      diff-cov-vitest:
-        specifier: workspace:*
-        version: link:../../packages/vitest
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -56,12 +56,12 @@ importers:
 
   packages/cli:
     dependencies:
+      '@diff-cov/core':
+        specifier: workspace:*
+        version: link:../core
       commander:
         specifier: ^15.1.0
         version: 15.1.0
-      diff-cov-core:
-        specifier: workspace:*
-        version: link:../core
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
@@ -103,7 +103,7 @@ importers:
 
   packages/vitest:
     dependencies:
-      diff-cov-core:
+      '@diff-cov/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:

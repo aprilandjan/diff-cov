@@ -18,11 +18,24 @@ Only lines added on the head side of the diff count. A modified line is a `-old`
 
 ## Packages
 
-| Package           | Purpose                                                                             |
-| ----------------- | ----------------------------------------------------------------------------------- |
-| `diff-cov-core`   | Git diff, coverage parsers, intersection, thresholds. No CLI, no runner dependency. |
-| `diff-cov-cli`    | `diff-cov` binary for pre-push hooks and CI.                                        |
-| `diff-cov-vitest` | Vitest 4 reporter that uses the in-memory coverage map.                             |
+| Package            | Purpose                                                                             |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| `@diff-cov/core`   | Git diff, coverage parsers, intersection, thresholds. No CLI, no runner dependency. |
+| `@diff-cov/cli`    | `diff-cov` binary for pre-push hooks and CI.                                        |
+| `@diff-cov/vitest` | Vitest 4 reporter that uses the in-memory coverage map.                             |
+
+## Install
+
+```bash
+pnpm add -D @diff-cov/cli
+pnpm add -D @diff-cov/vitest # optional: Vitest reporter
+```
+
+The CLI installs a `diff-cov` binary. Without installing:
+
+```bash
+npx @diff-cov/cli --base new --threshold 90
+```
 
 ## Quick start: pre-push
 
@@ -35,14 +48,14 @@ npx vitest run --coverage
 Run the check:
 
 ```bash
-npx diff-cov --base new --threshold 90
+pnpm exec diff-cov --base new --threshold 90
 ```
 
 Add it to Husky:
 
 ```bash
 # .husky/pre-push
-npx diff-cov --push --threshold 90
+pnpm exec diff-cov --push --threshold 90
 ```
 
 `--push` reads the refs git passes on stdin, so it measures exactly what this push adds to the remote. If there is no stdin, it falls back to `new` mode.
@@ -73,7 +86,7 @@ Exit codes:
 ```ts
 // vitest.config.ts
 import { defineConfig } from 'vitest/config'
-import DiffCovReporter from 'diff-cov-vitest'
+import DiffCovReporter from '@diff-cov/vitest'
 
 export default defineConfig({
   test: {

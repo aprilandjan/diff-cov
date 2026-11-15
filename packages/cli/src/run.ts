@@ -24,7 +24,7 @@ import {
   type ResolvedBase,
   type Scope,
   type Verdict,
-} from 'diff-cov-core'
+} from '@diff-cov/core'
 import { DEFAULT_COVERAGE_PATTERNS, loadCoverage } from './coverage.js'
 import { parsePushRefs, readStdin, type PushRef } from './push.js'
 

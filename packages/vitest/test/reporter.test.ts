@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { DiffCovReporter } from '../src/index.js'
-import { runGit } from 'diff-cov-core'
+import { runGit } from '@diff-cov/core'
 
 async function makeRepo(): Promise<string> {
   const root = await mkdtemp(join(tmpdir(), 'diff-cov-reporter-'))

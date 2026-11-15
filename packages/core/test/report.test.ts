@@ -79,6 +79,18 @@ describe('buildReport', () => {
     expect(report.files.find((file) => file.path === 'src/a.test.ts')?.reason).toBe('excluded')
   })
 
+  it('excludes tool config files by default', () => {
+    const report = buildReport({
+      changes: [change('vite.config.ts', [1]), change('src/config.ts', [1])],
+      bases: [base],
+      scope: 'committed',
+      coverage: coverage({ 'src/config.ts': { 1: 1 } }),
+    })
+
+    expect(report.totals.measured).toBe(1)
+    expect(report.files.find((file) => file.path === 'vite.config.ts')?.reason).toBe('excluded')
+  })
+
   it('skips files outside the project prefix', () => {
     const report = buildReport({
       changes: [change('packages/a/src/a.ts', [1]), change('packages/b/src/b.ts', [1])],
