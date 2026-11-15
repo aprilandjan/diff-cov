@@ -69,6 +69,10 @@ Exit codes:
 | `2`  | Configuration, usage, or git error                                   |
 | `3`  | Coverage report missing, unreadable, or older than the changed files |
 
+`--advisory` (or `advisory: true`) still reports a threshold failure, but exits
+`0`. Use it in a pre-commit hook while the gate is being rolled out; keep the
+blocking check in CI or pre-push.
+
 ## Base modes
 
 | Mode                   | Question                                   | Implementation                                                                                                      |
@@ -124,6 +128,7 @@ export default {
   threshold: 90,
   perFile: 0,
   missing: 'fail',
+  advisory: false,
   allowStale: false,
 }
 ```

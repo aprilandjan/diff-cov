@@ -47,6 +47,7 @@ export interface CliOptions {
   report?: string
   color: boolean
   verbose?: boolean
+  advisory?: boolean
   /** Pre-push stdin, for tests and embedders. */
   stdin?: string
 }
@@ -256,6 +257,10 @@ export async function run(options: CliOptions): Promise<number> {
     total: threshold,
     ...(perFile !== undefined ? { perFile } : {}),
   })
+  const advisory = options.advisory ?? config.advisory ?? false
+  if (advisory && !verdict.passed) {
+    report.warnings.push('Advisory mode: threshold failure does not fail the process.')
+  }
 
   if (options.report) {
     const path = resolve(cwd, options.report)
@@ -269,5 +274,5 @@ export async function run(options: CliOptions): Promise<number> {
     process.stdout.write(colorize(formatReport(report, verdict), options.color) + '\n')
   }
 
-  return verdict.passed ? 0 : 1
+  return verdict.passed || advisory ? 0 : 1
 }

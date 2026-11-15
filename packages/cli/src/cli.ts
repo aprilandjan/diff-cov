@@ -34,6 +34,7 @@ export function createProgram(): Command {
       ).choices(['fail', 'warn', 'ignore']),
     )
     .option('--allow-stale', 'accept a coverage report older than the changed files')
+    .option('--advisory', 'report threshold failures without failing the process')
     .option('--include <glob>', 'source glob to include (repeatable)', collect, [])
     .option('--exclude <glob>', 'glob to exclude (repeatable)', collect, [])
     .option('--json', 'print JSON instead of text')

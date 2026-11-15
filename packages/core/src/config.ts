@@ -16,6 +16,7 @@ export interface DiffCovConfig {
   missing?: MissingPolicy
   allowStale?: boolean
   includeUntracked?: boolean
+  advisory?: boolean
   report?: string | null
 }
 
@@ -32,6 +33,7 @@ const KEYS = new Set([
   'missing',
   'allowStale',
   'includeUntracked',
+  'advisory',
   'report',
 ])
 
@@ -100,6 +102,10 @@ export function validateConfig(value: unknown, source: string): DiffCovConfig {
       invalid(source, '"includeUntracked" must be a boolean')
     }
     config.includeUntracked = value.includeUntracked
+  }
+  if (value.advisory !== undefined) {
+    if (typeof value.advisory !== 'boolean') invalid(source, '"advisory" must be a boolean')
+    config.advisory = value.advisory
   }
   if (value.report !== undefined) {
     if (value.report !== null && typeof value.report !== 'string') {

@@ -20,6 +20,7 @@ describe('validateConfig', () => {
           missing: 'fail',
           allowStale: false,
           includeUntracked: true,
+          advisory: true,
           report: 'coverage/diff-cov.json',
         },
         'test',
@@ -35,6 +36,7 @@ describe('validateConfig', () => {
       missing: 'fail',
       allowStale: false,
       includeUntracked: true,
+      advisory: true,
       report: 'coverage/diff-cov.json',
     })
   })
@@ -52,6 +54,7 @@ describe('validateConfig', () => {
       /array of strings/,
     )
     expect(() => validateConfig({ scope: 'all' }, 'test')).toThrow(/committed/)
+    expect(() => validateConfig({ advisory: 'yes' }, 'test')).toThrow(/boolean/)
   })
 })
 

@@ -80,6 +80,28 @@ describe('cli e2e', () => {
     expect(stdout.output()).toContain('FAIL')
   })
 
+  it('reports a threshold failure without failing in advisory mode', async () => {
+    const root = await makeRepo()
+    await write(root, 'src/a.ts', 'line1\nline2\nline3\n')
+    await write(root, 'coverage/lcov.info', lcov)
+
+    const stdout = captureStdout()
+    const code = await run({
+      cwd: root,
+      base: 'HEAD',
+      scope: 'worktree',
+      coverage: ['coverage/lcov.info'],
+      threshold: 90,
+      advisory: true,
+      color: false,
+    })
+
+    expect(code).toBe(0)
+    expect(stdout.output()).toContain('Diff coverage 50.0% (1/2)')
+    expect(stdout.output()).toContain('FAIL')
+    expect(stdout.output()).toContain('Advisory mode')
+  })
+
   it('measures a worktree diff from a Cobertura report', async () => {
     const root = await makeRepo()
     await write(root, 'src/a.ts', 'line1\nline2\nline3\n')
