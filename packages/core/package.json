@@ -1,6 +1,6 @@
 {
   "name": "@diff-cov/core",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Compute line coverage of added and modified lines from a git diff.",
   "type": "module",
   "license": "MIT",
