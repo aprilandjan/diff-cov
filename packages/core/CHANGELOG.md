@@ -1,0 +1,7 @@
+# @diff-cov/core
+
+## 0.1.1
+
+### Patch Changes
+
+- ad8978c: Validate the trusted publishing release workflow.
