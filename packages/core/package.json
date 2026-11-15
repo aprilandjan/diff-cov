@@ -1,0 +1,39 @@
+{
+  "name": "diff-cov-core",
+  "version": "0.0.0",
+  "description": "Compute line coverage of added and modified lines from a git diff.",
+  "type": "module",
+  "license": "MIT",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.12.1",
+    "picomatch": "^4.0.7"
+  },
+  "devDependencies": {
+    "@types/picomatch": "^4.0.3",
+    "tsup": "^9.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "4.1.9"
+  }
+}

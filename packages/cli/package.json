@@ -1,0 +1,43 @@
+{
+  "name": "diff-cov-cli",
+  "version": "0.0.0",
+  "description": "Pre-push diff coverage gate for git and Vitest.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "diff-cov": "./dist/index.js"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "commander": "^15.1.0",
+    "diff-cov-core": "workspace:*",
+    "picocolors": "^1.1.1",
+    "tinyglobby": "^0.2.17"
+  },
+  "devDependencies": {
+    "tsup": "^9.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "4.1.9"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "diff-cov-example-vitest-app",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:diff-cov": "vitest run --coverage -c vitest.diff-cov.config.ts"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "4.1.9",
+    "diff-cov-vitest": "workspace:*",
+    "typescript": "^5.9.3",
+    "vitest": "4.1.9"
+  }
+}
