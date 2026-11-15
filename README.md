@@ -18,11 +18,11 @@ Only lines added on the head side of the diff count. A modified line is a `-old`
 
 ## Packages
 
-| Package | Purpose |
-| --- | --- |
-| `diff-cov-core` | Git diff, coverage parsers, intersection, thresholds. No CLI, no runner dependency. |
-| `diff-cov-cli` | `diff-cov` binary for pre-push hooks and CI. |
-| `diff-cov-vitest` | Vitest 4 reporter that uses the in-memory coverage map. |
+| Package           | Purpose                                                                             |
+| ----------------- | ----------------------------------------------------------------------------------- |
+| `diff-cov-core`   | Git diff, coverage parsers, intersection, thresholds. No CLI, no runner dependency. |
+| `diff-cov-cli`    | `diff-cov` binary for pre-push hooks and CI.                                        |
+| `diff-cov-vitest` | Vitest 4 reporter that uses the in-memory coverage map.                             |
 
 ## Quick start: pre-push
 
@@ -49,20 +49,20 @@ npx diff-cov --push --threshold 90
 
 Exit codes:
 
-| Code | Meaning |
-| --- | --- |
-| `0` | Passed, or no measurable changed lines |
-| `1` | Below the threshold |
-| `2` | Configuration, usage, or git error |
-| `3` | Coverage report missing, unreadable, or older than the changed files |
+| Code | Meaning                                                              |
+| ---- | -------------------------------------------------------------------- |
+| `0`  | Passed, or no measurable changed lines                               |
+| `1`  | Below the threshold                                                  |
+| `2`  | Configuration, usage, or git error                                   |
+| `3`  | Coverage report missing, unreadable, or older than the changed files |
 
 ## Base modes
 
-| Mode | Question | Implementation |
-| --- | --- | --- |
-| `--base origin/stable` | What did I change relative to this branch? | `merge-base(ref, HEAD) → HEAD` |
-| `--base auto` | Same, with the trunk found automatically | Candidates: remote `HEAD`, `main`, `master`, `develop`, `release/*`; the candidate with the closest merge-base wins |
-| `--base new` | What does this push add to the remote? | pre-push stdin `remote sha → local sha`; otherwise the closest remote-tracking merge-base |
+| Mode                   | Question                                   | Implementation                                                                                                      |
+| ---------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| `--base origin/stable` | What did I change relative to this branch? | `merge-base(ref, HEAD) → HEAD`                                                                                      |
+| `--base auto`          | Same, with the trunk found automatically   | Candidates: remote `HEAD`, `main`, `master`, `develop`, `release/*`; the candidate with the closest merge-base wins |
+| `--base new`           | What does this push add to the remote?     | pre-push stdin `remote sha → local sha`; otherwise the closest remote-tracking merge-base                           |
 
 `branch` and `auto` use three-dot semantics. `new` uses the remote tip, which is what the remote receives.
 

@@ -16,9 +16,7 @@ export interface CollectDiffCoverageOptions {
   pathPrefix?: string
 }
 
-export async function collectDiffCoverage(
-  options: CollectDiffCoverageOptions,
-): Promise<Report> {
+export async function collectDiffCoverage(options: CollectDiffCoverageOptions): Promise<Report> {
   const scope = options.scope ?? 'committed'
   const base = await resolveBase(options.cwd, options.base ?? 'auto')
   const changes = await collectChanges(options.cwd, base, {

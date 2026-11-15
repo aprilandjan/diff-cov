@@ -6,6 +6,7 @@
   "scripts": {
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:coverage:cobertura": "vitest run --coverage --coverage.reporter=cobertura --coverage.reportsDirectory=coverage-cob",
     "test:diff-cov": "vitest run --coverage -c vitest.diff-cov.config.ts"
   },
   "devDependencies": {

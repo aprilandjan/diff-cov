@@ -40,10 +40,7 @@ export interface CoverageSource {
 export type FileStatus = 'measured' | 'skipped'
 
 export type SkipReason =
-  | 'excluded'
-  | 'not-included'
-  | 'missing-from-coverage'
-  | 'no-instrumented-lines'
+  'excluded' | 'not-included' | 'missing-from-coverage' | 'no-instrumented-lines'
 
 export interface FileReport {
   path: string

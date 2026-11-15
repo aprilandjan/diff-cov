@@ -56,7 +56,9 @@ export async function getRepoRoot(cwd: string): Promise<string> {
 }
 
 export async function revParse(cwd: string, ref: string): Promise<string> {
-  return (await runGit(cwd, ['rev-parse', '--verify', `${ref}^{commit}`], { allowFailure: true })).trim()
+  return (
+    await runGit(cwd, ['rev-parse', '--verify', `${ref}^{commit}`], { allowFailure: true })
+  ).trim()
 }
 
 export async function refExists(cwd: string, ref: string): Promise<boolean> {
@@ -69,37 +71,46 @@ export async function mergeBase(cwd: string, a: string, b: string): Promise<stri
 }
 
 export async function commitTime(cwd: string, ref: string): Promise<number> {
-  const out = (await runGit(cwd, ['show', '-s', '--format=%ct', ref], { allowFailure: true })).trim()
+  const out = (
+    await runGit(cwd, ['show', '-s', '--format=%ct', ref], { allowFailure: true })
+  ).trim()
   return Number(out) || 0
 }
 
 export async function countCommits(cwd: string, from: string, to: string): Promise<number> {
-  const out = (await runGit(cwd, ['rev-list', '--count', `${from}..${to}`], { allowFailure: true })).trim()
+  const out = (
+    await runGit(cwd, ['rev-list', '--count', `${from}..${to}`], { allowFailure: true })
+  ).trim()
   return Number(out) || 0
 }
 
 export async function getCurrentBranch(cwd: string): Promise<string | null> {
-  const out = (await runGit(cwd, ['symbolic-ref', '--quiet', '--short', 'HEAD'], { allowFailure: true })).trim()
+  const out = (
+    await runGit(cwd, ['symbolic-ref', '--quiet', '--short', 'HEAD'], { allowFailure: true })
+  ).trim()
   return out || null
 }
 
 export async function isShallow(cwd: string): Promise<boolean> {
-  const out = (await runGit(cwd, ['rev-parse', '--is-shallow-repository'], { allowFailure: true })).trim()
+  const out = (
+    await runGit(cwd, ['rev-parse', '--is-shallow-repository'], { allowFailure: true })
+  ).trim()
   return out === 'true'
 }
 
 export async function getRemotes(cwd: string): Promise<string[]> {
   const out = await runGit(cwd, ['remote'], { allowFailure: true })
-  return out.split('\n').map((line) => line.trim()).filter(Boolean)
+  return out
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
 }
 
 export async function listRemoteRefs(cwd: string): Promise<RemoteRef[]> {
   const format = '%(refname)%09%(refname:short)%09%(objectname)%09%(committerdate:unix)'
-  const out = await runGit(
-    cwd,
-    ['for-each-ref', `--format=${format}`, 'refs/remotes'],
-    { allowFailure: true },
-  )
+  const out = await runGit(cwd, ['for-each-ref', `--format=${format}`, 'refs/remotes'], {
+    allowFailure: true,
+  })
   const refs: RemoteRef[] = []
   for (const line of out.split('\n')) {
     if (!line.trim()) continue
@@ -170,10 +181,7 @@ export async function resolveBase(
     }
     const base = await mergeBase(root, spec, headSha)
     if (!base) {
-      throw new DiffCovError(
-        `No merge base between ${spec} and ${head}.`,
-        'NO_MERGE_BASE',
-      )
+      throw new DiffCovError(`No merge base between ${spec} and ${head}.`, 'NO_MERGE_BASE')
     }
     return {
       mode: 'branch',

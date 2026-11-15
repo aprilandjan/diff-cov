@@ -11,9 +11,7 @@ import type {
   Scope,
 } from './types.js'
 
-export const DEFAULT_INCLUDE = [
-  '**/*.{js,jsx,ts,tsx,mjs,cjs,mts,cts,vue,svelte}',
-]
+export const DEFAULT_INCLUDE = ['**/*.{js,jsx,ts,tsx,mjs,cjs,mts,cts,vue,svelte}']
 
 export const DEFAULT_EXCLUDE = [
   '**/*.{test,spec}.{js,jsx,ts,tsx,mjs,cjs,mts,cts}',
@@ -78,7 +76,9 @@ export function buildReport(options: BuildReportOptions): Report {
       continue
     }
 
-    const measuredLines = [...change.added].filter((line) => hits[line] !== undefined).sort((a, b) => a - b)
+    const measuredLines = [...change.added]
+      .filter((line) => hits[line] !== undefined)
+      .sort((a, b) => a - b)
     if (measuredLines.length === 0) {
       files.push(skipped(path, change, added, 'no-instrumented-lines'))
       continue

@@ -5,9 +5,7 @@ export function evaluateThreshold(report: Report, options: ThresholdOptions): Ve
   const totals = report.totals
 
   const totalPassed =
-    total === undefined ||
-    totals.measured === 0 ||
-    totals.covered * 100 >= total * totals.measured
+    total === undefined || totals.measured === 0 || totals.covered * 100 >= total * totals.measured
 
   const fileFailures =
     perFile === undefined

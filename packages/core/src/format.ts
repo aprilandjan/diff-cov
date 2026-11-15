@@ -34,7 +34,9 @@ export function formatReport(report: Report, verdict: Verdict): string {
         `${base.distance} commit(s) behind)`,
     )
   }
-  out.push(`Scope: ${report.scope}${report.coverageFiles.length ? ` · coverage ${report.coverageFiles.join(', ')}` : ''}`)
+  out.push(
+    `Scope: ${report.scope}${report.coverageFiles.length ? ` · coverage ${report.coverageFiles.join(', ')}` : ''}`,
+  )
   out.push('')
 
   if (totals.measured === 0) {

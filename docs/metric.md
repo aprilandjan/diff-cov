@@ -53,7 +53,7 @@ the coverage report does not model. Typical cases:
 
 - a continuation line inside a multi-line statement (Istanbul-style reports
   attach the statement to its opening line);
-- a comment or a type-only line in a file that *is* in the report;
+- a comment or a type-only line in a file that _is_ in the report;
 - code excluded by the project's own coverage configuration.
 
 They are **not** part of the denominator. The report shows the count so the
